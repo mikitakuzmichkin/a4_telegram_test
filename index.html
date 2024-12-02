@@ -6,13 +6,10 @@
     <title>Unity WebGL Player | A4 Чат</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
-
-        <!-- Yandex Games SDK -->
-<script src="https://yandex.ru/games/sdk/v2"></script>
   </head>
   <body>
-    <div id="unity-container" style = "position: absolute; width: 100%; height: 100%; left: 0%; top: 0%;">
-      <canvas id="unity-canvas" style = "position: absolute; width: 100%; height: 100%;"></canvas>
+    <div id="unity-container" class="unity-desktop">
+      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
       <div id="unity-loading-bar">
         <div id="unity-logo"></div>
         <div id="unity-progress-bar-empty">
@@ -20,11 +17,27 @@
         </div>
       </div>
       <div id="unity-warning"> </div>
-
+      <div id="unity-footer">
+        <div id="unity-webgl-logo"></div>
+        <div id="unity-fullscreen-button"></div>
+        <div id="unity-build-title">A4 Чат</div>
+      </div>
     </div>
-
     <script>
 
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      var warningBanner = document.querySelector("#unity-warning");
+
+      // Shows a temporary message banner/ribbon for a few seconds, or
+      // a permanent error message on top of the canvas if type=='error'.
+      // If type=='warning', a yellow highlight color is used.
+      // Modify or remove this function to customize the visually presented
+      // way that non-critical warnings and error messages are presented to the
+      // user.
       function unityShowBanner(msg, type) {
         function updateBannerVisibility() {
           warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
@@ -44,87 +57,19 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/a4.loader.js";
+      var loaderUrl = buildUrl + "/build2.loader.js";
       var config = {
-        dataUrl: buildUrl + "/a4.data.br",
-        frameworkUrl: buildUrl + "/a4.framework.js.br",
-        codeUrl: buildUrl + "/a4.wasm.br",
+        dataUrl: buildUrl + "/build2.data.unityweb",
+        frameworkUrl: buildUrl + "/build2.framework.js.unityweb",
+        codeUrl: buildUrl + "/build2.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "Mobicone",
         productName: "A4 Чат",
-        productVersion: "12",
+        productVersion: "3.2",
         showBanner: unityShowBanner,
       };
 
-    YaGames
-      .init()
-      .then((ysdk) => {
-          window.ysdk = ysdk;
-          return ysdk.getPlayer()
-              .then(player => {
-                  window.player = player;
-                  return player;
-              }).then(() => {
-                  const script = document.createElement("script");
-                  script.src = loaderUrl;
-                  script.onload = () => {
-                      createUnityInstance(canvas, config, (progress) => {
-                          //progressBarFull.style.width = ${100 * progress}%;  //Тут смена прогрессбара загрузки
-                      }).then(unityInst => {
-                        myGameInstance = unityInst;
-                          //progressBarFull.style.display = "none"; //Скрытие прогрессбара загрузки
-                      }).catch((e) => {
-                          alert("Что-то пошло не так во время инициализации Юнити");
-                          console.error(e);
-                      })
-                  }
-                  document.body.appendChild(script);
-                  initLib();
-              }).catch((e) => {
-                  alert("Что-то пошло не так во время инициализации SDK");
-                  console.error(e);
-              });
-      });
-
-      //loadingBar.style.display = "block";
-      
-      var lb;
-      function initLib() {
-          ysdk.getLeaderboards()
-              .then(_lb => lb = _lb);
-      }
-
-      /*
-      var player;
-
-      function initPlayer() {
-          return ysdk.getPlayer({ scopes: false }).then(_player => {
-              player = _player;
-
-              return player;
-          });
-      }*/
-      
-
-  </script>
-  
-    <script>
-
-      var container = document.querySelector("#unity-container");
-      var canvas = document.querySelector("#unity-canvas");
-      var loadingBar = document.querySelector("#unity-loading-bar");
-      var progressBarFull = document.querySelector("#unity-progress-bar-full");
-      //var fullscreenButton = document.querySelector("#unity-fullscreen-button");
-      var warningBanner = document.querySelector("#unity-warning");
-
-      // Shows a temporary message banner/ribbon for a few seconds, or
-      // a permanent error message on top of the canvas if type=='error'.
-      // If type=='warning', a yellow highlight color is used.
-      // Modify or remove this function to customize the visually presented
-      // way that non-critical warnings and error messages are presented to the
-      // user.
-
-      // By default Unity keeps WebGL canvas render target size matched with
+      // By default, Unity keeps WebGL canvas render target size matched with
       // the DOM size of the canvas element (scaled by window.devicePixelRatio)
       // Set this to false if you want to decouple this synchronization from
       // happening inside the engine, and you would instead like to size up
@@ -149,9 +94,29 @@
       } else {
         // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
 
-        canvas.style.width = "100%";
-        canvas.style.height = "100%";
+        canvas.style.width = "960px";
+        canvas.style.height = "600px";
       }
+
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+              }).then((unityInstance) => {
+                loadingBar.style.display = "none";
+                fullscreenButton.onclick = () => {
+                  unityInstance.SetFullscreen(1);
+                };
+              }).catch((message) => {
+                alert(message);
+              });
+            };
+
+      document.body.appendChild(script);
+
     </script>
   </body>
 </html>
